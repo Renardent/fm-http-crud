@@ -1,0 +1,15 @@
+{
+    "development": {
+        "host": "fm_crud",
+        "port": 5432,
+        "user": "postgres",
+        "password": 111,
+        "database": "fm_crud"
+    },
+    "test": {
+
+    },
+    "production": {
+
+    }
+}
