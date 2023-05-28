@@ -26,7 +26,6 @@ module.exports.getAllThings = async (req, res, next) => {
 module.exports.getOne = async (req,res,next) => {
     const {params: {id}} = req;
     try {
-        console.log(id);
         const thing = await Thing.findByPk(id);
         res.status(200).send(thing);
     } catch(error) {
