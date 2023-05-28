@@ -7,62 +7,59 @@ class Thing {
         body: 'string'
     }
 
-    static async create (insertValues) {
-       const insertAttr = Object.entries(this._attributes)
-        .filter(([attr, domain])=>attr in insertValues)
-        .map(([attr])=> attr);
-        const insertSchemaStr = insertAttr.map(attr => `"${attr}"`).join(',');
-
-        const insertValueStr = insertAttr.map(attr => {
-            const value = insertValues[attr];
+    static async create(insertValues) {
+        const insertAttr = Object.entries(this._attributes)
+         .filter(([attr, domain])=> attr in insertValues)
+         .map(([attr]) => attr);
+ 
+         const insertSchemaStr = insertAttr.map(attr => `"${attr}"`).join(',');
+ 
+         const insertValueStr = insertAttr.map(attr => {
+             const value = insertValues[attr];
             return typeof value === 'string' ? `'${value}'` : value;
-        }).join(',');
-        const str = `INSERT INTO ${this._tableName} (${insertAttr})
-                VALUES (${insertValueStr}) 
-                RETURNING *;`
-        const {rows} = await this._client.query(srt);
+         }).join(',');
+         const str = `INSERT INTO ${this._tableName} (${insertSchemaStr})
+                             VALUES (${insertValueStr}) RETURNING *;`
+         const {rows} = await this._client.query(str);
+         return rows;
+     }
+
+    static async findByPk(pk) {
+        const {rows} = await this._client.query(`SELECT * FROM ${this._tableName} 
+        WHERE id = ${pk};`);
         return rows;
     }
 
-    static async findByPk (pk) {
-        const {rows} = await this._client.query
-        (`SELECT * FROM ${this._tableName} 
-        WHERE id =${pk}`);
+    static async findAll() {
+        const {rows} = await this._client.query(`SELECT * FROM ${this._tableName};`);
         return rows;
     }
 
-    static async findAll () {
-        const {rows} = await this._client.query
-        (`SELECT * FROM ${this._tableName}`);
-        return rows;
-    }
-
-    static async updateByPk(updateObj) {
-        const {id, updateValues} = updateObj;
+    static async updateByPk({id, updateValues}) {
 
         const insertAttr = Object.entries(this._attributes)
-        .filter(([attr, domain])=>attr in updateValues)
-        .map(([attr])=> attr);
-
-        const insertSchemaStr = insertAttr.map(attr => `"${attr}"`).join(',');
+        .filter(([attr, domain])=> attr in updateValues)
+        .map(([attr]) => attr);
+    
         const insertValueStr = insertAttr.map(attr => {
             const value = updateValues[attr];
-            return typeof value === 'string' ? `'${value}'` : value;
+           return `${attr} = ${typeof value === 'string' ? `'${value}'` : value}`
         }).join(',');
-        // const str = `INSERT INTO ${this._tableName} (${insertAttr})
-        //         VALUES (${insertValueStr}) 
-        //         RETURNING *;`
-        const {rows} = await this._client.query
-        (`UPDATE ${this._tableName} 
-        SET body = ${body}
-        WHERE id = ${id};`);
+         const {rows} = await this._client.query(`UPDATE ${this._tableName}
+                             SET ${insertValueStr}
+                            WHERE id = ${id}
+                                RETURNING *;`);       
         return rows;
+    
     }
+
 
     static async deleteByPk(pk)  {
         const {rows} = await this._client.query
         (`DELETE FROM ${this._tableName} 
-        WHERE id = ${pk};`);
+        WHERE id = ${pk} RETURNING *;`);
         return rows;
     }
 }
+
+module.exports = Thing;
